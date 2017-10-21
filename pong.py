@@ -1,75 +1,86 @@
-###############################################################################################
-#   VPython Single Player Pong                                                                #
-#   File: pong.py                                                                             #
-#   Author: Michael Morgan Wise                                                               #
-#   Description: A single player, simplified version of a classic game.                       #
-###############################################################################################
-
 from visual import *
-import random
 
-# Set necessary variables
-maxScore = 10
-animationRate = 1500
-score = 0
-deltaT = 0.001
+Rnum = 0
+Lnum = 0
 
-# Create and customize windows
-w = window(title = 'Single Player Pong', width = 700, height = 700)
-scene = display(window = w, width = 700, height = 700, center = (0,0,0), range = (75,75,100))
-#scene.stereo = 'redcyan' # For 3D Glasses
+RightScore = text(pos=vector(4,6,0),text=str(Rnum), align='center', depth=0.1, color=color.green)
+LeftScore = text(pos=vector(-4,6,0),text=str(Lnum), align='center', depth=0.1, color=color.green)
 
-# Create room
-rightWall = box(size=(1,101,25),pos=(50,0,0), material = materials.wood, color=(1,0.7,0.2))
-bottomWall = box(size=(100,1,25),pos=(0,-50,0), material = materials.wood, color=(1,0.7,0.2))
-topWall = box(size=(100,1,25),pos=(0,50,0), material = materials.wood, color=(1,0.7,0.2))
-floor = box(size=(100,100,1),pos=(0,0,-12.5), material = materials.wood, color=(1,0.7,0.2))
+#ball
+ball = sphere(pos=(-5,0,0),radius=0.5, color=color.cyan)
 
-# Create a score box
-scoreLabel = label(text = 'Score: %d'%score, font='serif', pos=(0,65,0), border = 6)
+#box
+RightWall = box(pos=(8,0,0), size=(0.2,12,12), color=color.green, opacity=0)
+LeftWall = box(pos=(-8,0,0), size=(0.2,12,12), color=color.green, opacity=0)
+TopWall = box(pos=(0,6,0), size=(12,0.2,12), color=color.yellow, opacity=0)
+BottomWall = box(pos=(0,-6,0), size=(12,0.2,12), color=color.yellow, opacity=0)
+wallBack = box(pos=(0,0,-6), size=(12,12,0.2), color=color.cyan, opacity=0)
 
-# Create a pad
-pad = cylinder(pos=(-50,0,0), radius = 10, material = materials.wood)
+RightPaddle = box(pos=(7,0,0), size=(1,4,0), color=color.blue)
+LeftPaddle = box(pos=(-7,0,0), size=(1,4,0), color=color.blue)
 
-# Create a ball
-ball = sphere(radius=2, material = materials.rough)
+ball.velocity=vector(25,35,0)
 
-# Set the velocity vector for the ball
-ball.velocity = vector(random.randint(15,45),random.randint(15,45),0)
+deltat=0.005
+t=1
 
-# Generic Animation Loop
-while score < maxScore and score >= 0:
-    # Edit animation rate to allow for smooth generation
-    rate(animationRate)
+while 1 >0:
+    rate(55)
 
-    # Ball bouncing logic
-    if ball.pos.x > 48:
-        ball.velocity.x = -ball.velocity.x
-    # Scoring logic
-    elif ball.pos.x < -48 and ball.pos.x > -49 and ball.pos.y < pad.pos.y+pad.radius and ball.pos.y > pad.pos.y-pad.radius:
-        ball.velocity.x = -ball.velocity.x
-        score = score + 1
-        scoreLabel.text = 'Score: %d'%score
+    if ball.pos.x == RightPaddle.pos.x-1 and ball.pos.y <= RightPaddle.pos.y+2 and ball.pos.y >= RightPaddle.pos.y-2: 
+        ball.velocity.x=-25
 
-    # Ball bouncing logic
-    if ball.pos.y > 48 and ball.pos.x < 48 and ball.pos.x > -48:
-        ball.velocity.y = -ball.velocity.y
-    elif ball.pos.y < -48 and ball.pos.x < 48 and ball.pos.x > -48:
-        ball.velocity.y = -ball.velocity.y
+    if ball.pos.x == LeftPaddle.pos.x+1 and ball.pos.y <= LeftPaddle.pos.y+2 and ball.pos.y >= LeftPaddle.pos.y-2: 
+        ball.velocity.x=25
 
-    # Moves the paddle
-    if scene.mouse.pos.y < 45 and scene.mouse.pos.y > -45:
-        pad.pos.y = scene.mouse.pos.y
+    if ball.pos.x >= RightWall.pos.x:
+        ball.velocity.x=-25
+        
+    elif ball.pos.x <= LeftWall.pos.x:
+        ball.velocity.x=25
+        
+    elif ball.pos.y >= TopWall.pos.y:
+        ball.velocity.y=-35
+       
+    elif ball.pos.y <= BottomWall.pos.y:
+        ball.velocity.y=35
 
-    # Actually moves the ball       
-    ball.pos = ball.pos + ball.velocity*deltaT
+        
+### SCOREBOARD ########################
 
-    # If the ball is out of the box, show the game over screen and exit loop
-    if ball.pos.x > 60 or ball.pos.x < -60 or ball.pos.y < -60 or ball.pos.y > 60:
-        label(text = '      GAME OVER:\nYou dropped the ball.', font='serif')
-        scoreLabel.visible = False
-        score = -1;
 
-# Give congratulations if they are in order
-if score >= 0:
-    label(text = 'CONGRATULATIONS!\n            You won!', font='serif')
+
+    if ball.pos.x == LeftWall.pos.x:
+        Rnum = Rnum + 1
+        RightScore.text = str(Rnum)
+
+
+        
+    if ball.pos.x == RightWall.pos.x:
+        Lnum = Lnum + 1
+        LeftScore.text = str(Rnum)
+
+
+       
+
+######################################
+# KEY PRESS EVENTS
+    if scene.kb.keys: 
+         key = scene.kb.getkey() 
+         if key == "up":
+            if LeftPaddle.pos.y <= 7:
+                LeftPaddle.pos.y = LeftPaddle.pos.y + 2
+
+         elif key == "down":
+            if LeftPaddle.pos.y >= -7:
+                LeftPaddle.pos.y = LeftPaddle.pos.y - 2 
+         
+         elif key == "w":
+            if RightPaddle.pos.y <= 7:
+                RightPaddle.pos.y = RightPaddle.pos.y + 2
+
+         elif key == "s":
+            if RightPaddle.pos.y >= -7:
+                RightPaddle.pos.y = RightPaddle.pos.y - 2
+
+    ball.pos = ball.pos + ball.velocity * deltat
